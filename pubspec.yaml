@@ -74,6 +74,7 @@ flutter:
     - assets/photo 1.png
     - assets/user2.png
     - assets/photo 3.png
+    - assets/user2.1.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

@@ -1,3 +1,6 @@
+import 'package:fine_arts/admin/AdminOrgnizer.dart';
+import 'package:fine_arts/admin/adminLogin.dart';
+import 'package:fine_arts/organizer/organizerLogin.dart';
 import 'package:fine_arts/splash.dart';
 import 'package:fine_arts/student/studenhome.dart';
 import 'package:fine_arts/student/student.dart';
@@ -24,7 +27,7 @@ class MyApp extends StatelessWidget {
             useMaterial3: true,
           ),
           debugShowCheckedModeBanner: false,
-          home: Studenthome()),
+          home: AdminOrg()),
     );
   }
 }
