@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -10,6 +11,10 @@ class AddEventAdmin extends StatefulWidget {
 }
 
 class _AddEventAdminState extends State<AddEventAdmin> {
+  TextEditingController nameController = TextEditingController();
+    TextEditingController dateController = TextEditingController();
+    TextEditingController stageController = TextEditingController();
+    TextEditingController timeController = TextEditingController();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -29,19 +34,19 @@ class _AddEventAdminState extends State<AddEventAdmin> {
         SizedBox(
           height: 44.h,
         ),
-        CustomTextField2(Title: 'Name', hintText: 'name'),
+        CustomTextField2(controller: nameController,Title: 'Name', hintText: 'name'),
         SizedBox(
           height: 23.h,
         ),
-        CustomTextField2(Title: 'Date', hintText: ''),
+        CustomTextField2(controller: dateController,Title: 'Date', hintText: ''),
         SizedBox(
           height: 23.h,
         ),
-        CustomTextField2(Title: 'Stage No', hintText: ''),
+        CustomTextField2(controller: stageController,Title: 'Stage No', hintText: ''),
         SizedBox(
           height: 23.h,
         ),
-        CustomTextField2(Title: 'Time', hintText: ''),
+        CustomTextField2(controller: timeController,Title: 'Time', hintText: ''),
         SizedBox(
           height: 23.h,
         ),
@@ -52,13 +57,29 @@ class _AddEventAdminState extends State<AddEventAdmin> {
                     borderRadius: BorderRadius.circular(10.r))),
                 minimumSize: MaterialStatePropertyAll(Size(350.w, 50.h)),
                 backgroundColor: MaterialStatePropertyAll(Color(0xFF204563))),
-            onPressed: () {
-              // if (formkey.currentState!.validate()) ;
-              // Navigator.pushReplacement(context, MaterialPageRoute(
-              //   builder: (context) {
-              //     return Studenthome();
-              //   },
-              // ));
+            onPressed: () async {
+              // Assuming you have controllers for your text fields
+    // Define controllers for the text fields in your state
+  
+
+    // Get the text values from the controllers
+    String name = nameController.text;
+    String date = dateController.text;
+    String stage = stageController.text;
+    String time = timeController.text;
+
+    // Access Firestore instance and add data to a collection
+    CollectionReference events =
+        FirebaseFirestore.instance.collection('events');
+
+    // Add the event data to Firestore
+    await events.add({
+      'name': name,
+      'date': date,
+      'stage': stage,
+      'time': time,
+    });
+
             },
             child: Text(
               'Submit',
