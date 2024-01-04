@@ -43,7 +43,7 @@ class _StdDetailsState extends State<StdDetails> {
           .doc(widget.studentId)
           .update({'status': status});
 
-      // Optionally, you can fetch updated data here after status change
+      fetchStudentDetails();
     } catch (e) {
       print('Error updating status: $e');
     }
@@ -140,6 +140,19 @@ class _StdDetailsState extends State<StdDetails> {
                     fontWeight: FontWeight.w400,
                     height: 0,
                   ),
+                ),
+                SizedBox(
+                  height: 30.h,
+                ),
+                Text(
+                  'Status',
+                  style: TextStyle(
+                    color: Color(0xFF1A1919),
+                    fontSize: 15.sp,
+                    fontFamily: 'Poppins',
+                    fontWeight: FontWeight.w400,
+                    height: 0,
+                  ),
                 )
               ],
             ),
@@ -187,6 +200,19 @@ class _StdDetailsState extends State<StdDetails> {
                 ),
                 Text(
                   '${studentData['email'] ?? ""}',
+                  style: TextStyle(
+                    color: Color(0xFFB8B1B1),
+                    fontSize: 13.sp,
+                    fontFamily: 'Poppins',
+                    fontWeight: FontWeight.w400,
+                    height: 0,
+                  ),
+                ),
+                SizedBox(
+                  height: 30.h,
+                ),
+                Text(
+                  '${studentData['status'] ?? ""}',
                   style: TextStyle(
                     color: Color(0xFFB8B1B1),
                     fontSize: 13.sp,
