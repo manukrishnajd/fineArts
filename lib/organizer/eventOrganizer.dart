@@ -1,9 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fine_arts/organizer/addresult.dart';
 import 'package:fine_arts/organizer/eventDetails.dart';
 import 'package:fine_arts/organizer/participentList.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class OrgEvent extends StatefulWidget {
   const OrgEvent({super.key});
@@ -13,6 +15,47 @@ class OrgEvent extends StatefulWidget {
 }
 
 class _OrgEventState extends State<OrgEvent> with TickerProviderStateMixin {
+
+   List<Map<String, dynamic>> eventsData = [];
+
+   @override
+  void initState() {
+    super.initState();
+    fetchData();
+  }
+
+  Future<void> fetchData() async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String organizerId = prefs.getString('organizerDocId') ?? '';
+
+      if (organizerId.isNotEmpty) {
+        var querySnapshot = await FirebaseFirestore.instance
+            .collection('events')
+            .where('organiserId', isEqualTo: organizerId)
+            .get();
+
+        var eventData = querySnapshot.docs;
+
+        if (eventData.isNotEmpty) {
+          setState(() {
+            eventsData = eventData.map((doc) {
+              var data = doc.data() as Map<String, dynamic>;
+              data['docId'] = doc.id; // Include the documentId in the event data
+              return data;
+            }).toList();
+            print(eventsData);
+          });
+        } else {
+          print('No events found for organizer: $organizerId');
+        }
+      } else {
+        print('Organizer ID is empty');
+      }
+    } catch (e) {
+      print('Error fetching events: $e');
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -45,43 +88,51 @@ class _OrgEventState extends State<OrgEvent> with TickerProviderStateMixin {
               ),
               Expanded(
                 child: TabBarView(physics: BouncingScrollPhysics(), children: [
-                  Column(
-                    children: [
-                      InkWell(
-                        onTap: () {
-                          Navigator.push(
+                   Column(
+            children: eventsData.map((event) {
+                      return Padding(
+                        padding: EdgeInsets.symmetric(vertical: 8.0),
+                        child: InkWell(
+                          onTap: () {
+                            Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => ParticipentList(),
-                              ));
-                        },
-                        child: Container(
-                          width: 350.w,
-                          height: 50.h,
-                          decoration: ShapeDecoration(
-                            color: Color(0xFF558DBA),
-                            shape: RoundedRectangleBorder(
-                              side: BorderSide(
-                                  width: 1.w, color: Color(0xFF558DBA)),
-                              borderRadius: BorderRadius.circular(8.r),
+                              ),
+                            );
+                          },
+                          child: Container(
+                            width: 350.w,
+                            height: 50.h,
+                            decoration: ShapeDecoration(
+                              color: Color(0xFF558DBA),
+                              shape: RoundedRectangleBorder(
+                                side: BorderSide(
+                                  width: 1.w,
+                                  color: Color(0xFF558DBA),
+                                ),
+                                borderRadius: BorderRadius.circular(8.r),
+                              ),
                             ),
-                          ),
-                          child: Center(
-                            child: Text(
-                              'Kuchupudi',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 18.sp,
-                                fontFamily: 'Poppins',
-                                fontWeight: FontWeight.w500,
-                                height: 0,
+                            child: Center(
+                              child: Text(
+                                event['name'] ?? '', // Display event name
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18.sp,
+                                  fontFamily: 'Poppins',
+                                  fontWeight: FontWeight.w500,
+                                  height: 0,
+                                ),
                               ),
                             ),
                           ),
                         ),
-                      )
-                    ],
-                  ),
+                      );
+                    }).toList(),
+            
+        
+          ),
                   Column(
                     children: [
                       InkWell(

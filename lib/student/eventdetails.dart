@@ -1,15 +1,46 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fine_arts/student/eventapply.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-
 class Eventdetails extends StatefulWidget {
-  const Eventdetails({super.key});
+  final String documentId;
+  const Eventdetails({Key? key, required this.documentId}) : super(key: key);
 
   @override
   State<Eventdetails> createState() => _EventdetailsState();
 }
 
 class _EventdetailsState extends State<Eventdetails> {
+  Map<String, dynamic> eventData = {};
+
+  @override
+  void initState() {
+    super.initState();
+    fetchEventData();
+  }
+
+  Future<void> fetchEventData() async {
+    try {
+      DocumentSnapshot<Map<String, dynamic>> snapshot =
+          await FirebaseFirestore.instance.collection('events').doc(widget.documentId).get();
+
+      if (snapshot.exists) {
+        setState(() {
+          eventData = snapshot.data()!;
+        });
+        print(eventData);
+      } else {
+        print('Document does not exist');
+      }
+    } catch (e) {
+      print('Error fetching data: $e');
+    }
+  }
+
+  Future<void> refreshData() async {
+    await fetchEventData();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -34,7 +65,7 @@ class _EventdetailsState extends State<Eventdetails> {
           height: 18.h,
         ),
         Text(
-          'Mohiniyattam',
+          eventData['name'] ?? '',
           style: TextStyle(
             color: Colors.black,
             fontSize: 17.sp,
@@ -91,23 +122,23 @@ class _EventdetailsState extends State<Eventdetails> {
                 SizedBox(
                   height: 30.h,
                 ),
-                Text(
-                  'Location',
-                  style: TextStyle(
-                    color: Color(0xFF1A1919),
-                    fontSize: 15.sp,
-                    fontFamily: 'Poppins',
-                    fontWeight: FontWeight.w400,
-                    height: 0,
-                  ),
-                )
+                // Text(
+                //   'Location',
+                //   style: TextStyle(
+                //     color: Color(0xFF1A1919),
+                //     fontSize: 15.sp,
+                //     fontFamily: 'Poppins',
+                //     fontWeight: FontWeight.w400,
+                //     height: 0,
+                //   ),
+                // )
               ],
             ),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '18/07/23',
+                  eventData['date'] ?? '',
                   style: TextStyle(
                     color: Color(0xFFB8B1B1),
                     fontSize: 13.sp,
@@ -120,7 +151,7 @@ class _EventdetailsState extends State<Eventdetails> {
                   height: 32.h,
                 ),
                 Text(
-                  '02',
+                  eventData['stage'] ?? '',
                   style: TextStyle(
                     color: Color(0xFFB8B1B1),
                     fontSize: 13.sp,
@@ -133,7 +164,7 @@ class _EventdetailsState extends State<Eventdetails> {
                   height: 32.h,
                 ),
                 Text(
-                  '1:30 pm',
+                  eventData['time'] ?? '',
                   style: TextStyle(
                     color: Color(0xFFB8B1B1),
                     fontSize: 13.sp,
@@ -145,16 +176,16 @@ class _EventdetailsState extends State<Eventdetails> {
                 SizedBox(
                   height: 30.h,
                 ),
-                Text(
-                  'Ground',
-                  style: TextStyle(
-                    color: Color(0xFFB8B1B1),
-                    fontSize: 13.sp,
-                    fontFamily: 'Poppins',
-                    fontWeight: FontWeight.w400,
-                    height: 0,
-                  ),
-                )
+                // Text(
+                //   'Ground',
+                //   style: TextStyle(
+                //     color: Color(0xFFB8B1B1),
+                //     fontSize: 13.sp,
+                //     fontFamily: 'Poppins',
+                //     fontWeight: FontWeight.w400,
+                //     height: 0,
+                //   ),
+                // )
               ],
             ),
           ],

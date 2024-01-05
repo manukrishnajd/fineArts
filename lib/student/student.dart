@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'studentregistration.dart';
 
 class Studentlogin extends StatefulWidget {
@@ -88,47 +89,15 @@ class _StudentloginState extends State<Studentlogin> {
 
   ElevatedButton customButton(double textSize, String text) => ElevatedButton(
         style: ButtonStyle(
-          shape: MaterialStateProperty.all(RoundedRectangleBorder(
+          shape: MaterialStatePropertyAll(RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10.r),
           )),
-          minimumSize: MaterialStateProperty.all(Size(350.w, 60.h)),
-          backgroundColor: MaterialStateProperty.all(Color(0xFF204563)),
+          minimumSize: MaterialStatePropertyAll(Size(350.w, 60.h)),
+          backgroundColor: MaterialStatePropertyAll(Color(0xFF204563)),
         ),
-        onPressed: () async {
+        onPressed: () {
           if (formKey.currentState!.validate()) {
-            String email = user.text.trim();
-            String pwd = password.text.trim();
-                print(email);
-                print(pwd);
-            try {
-              UserCredential userCredential = await _auth.signInWithEmailAndPassword(
-                email: email,
-                password: pwd,
-              );
-              // Retrieve user data from Firestore
-              if (userCredential.user != null) {
-                DocumentSnapshot userData = await _firestore.collection('users').doc(userCredential.user!.uid).get();
-                if (userData.exists) {
-                  // Check user status or other data as needed
-                  String status = userData['status'];
-                  if (status == 'Accepted') {
-                    // User status is accepted, navigate to home or another screen
-                    // Replace `HomeScreen` with your desired screen
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => Studenthome()),
-                    );
-                  } else {
-                    // User status is not accepted
-                    // You can show a message or handle accordingly
-                    print('User status is not accepted');
-                  }
-                }
-              }
-            } catch (e) {
-              // Handle login errors here
-              print('Login Error: $e');
-            }
+            validateLogin();
           }
         },
         child: Text(
@@ -138,7 +107,6 @@ class _StudentloginState extends State<Studentlogin> {
             fontSize: textSize,
             fontFamily: 'Poppins',
             fontWeight: FontWeight.w500,
-            height: 0,
           ),
         ),
       );
@@ -184,4 +152,53 @@ class _StudentloginState extends State<Studentlogin> {
       ),
     );
   }
+   void validateLogin() async {
+    final String enteredEmail = user.text;
+    final String enteredPassword = password.text;
+
+    try {
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('students')
+          .where('email', isEqualTo: enteredEmail)
+          .where('password', isEqualTo: enteredPassword)
+          .where('status', isEqualTo: 'Accepted') // Check for 'accepted' status
+    .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        
+        String docId = querySnapshot.docs.first.id; // Get the Document ID
+
+        // Store Document ID in shared preferences
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('studentId', docId);
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => Studenthome()),
+        );
+      } else {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text('Invalid Credentials'),
+              content: Text('Please enter valid email and password.'),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text('OK'),
+                ),
+              ],
+            );
+          },
+        );
+      }
+    } catch (e) {
+      print('Error: $e');
+    }
+  }
 }
+
+

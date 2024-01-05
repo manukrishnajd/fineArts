@@ -6,15 +6,58 @@ import 'package:fine_arts/organizer/eventOrganizer.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 class OrgAssign extends StatefulWidget {
-  const OrgAssign({super.key});
+  const OrgAssign({Key? key});
 
   @override
   State<OrgAssign> createState() => _OrgAssignState();
 }
 
-class _OrgAssignState extends State<OrgAssign> with TickerProviderStateMixin {
+class _OrgAssignState extends State<OrgAssign>
+    with TickerProviderStateMixin {
+  List<Map<String, dynamic>> eventsData = [];
+
+  @override
+  void initState() {
+    super.initState();
+    fetchData();
+  }
+
+  
+Future<void> fetchData() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String organizerId = prefs.getString('organizerDocId') ?? '';
+
+  if (organizerId.isNotEmpty) {
+    var querySnapshot = await FirebaseFirestore.instance
+        .collection('events')
+        .where('organiserId', isEqualTo: organizerId)
+        .get();
+
+    var eventData = querySnapshot.docs;
+
+    if (eventData.isNotEmpty) {
+      setState(() {
+        eventsData = eventData.map((doc) {
+          var data = doc.data() as Map<String, dynamic>;
+          data['docId'] = doc.id; // Include the documentId in the event data
+          return data;
+        }).toList();
+        print(eventsData);
+      });
+    } else {
+      print('No events found for organizer: $organizerId');
+    }
+  } else {
+    print('Organizer ID is empty');
+  }
+}
+
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -131,6 +174,9 @@ class _OrgAssignState extends State<OrgAssign> with TickerProviderStateMixin {
                 )
               ],
             ),
+
+
+            
             Positioned(
               bottom: 20,
               left: 20,
@@ -259,7 +305,9 @@ class _OrgAssignState extends State<OrgAssign> with TickerProviderStateMixin {
   //     ),
   //   );
 
-  Padding customContainer() => Padding(
+   Padding customContainer() {
+    List<Widget> eventWidgets = eventsData.map((event) {
+      return Padding(
         padding: const EdgeInsets.all(20),
         child: Container(
           width: 350.w,
@@ -273,72 +321,86 @@ class _OrgAssignState extends State<OrgAssign> with TickerProviderStateMixin {
             ),
           ),
           child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Spacer(),
-                    Text(
-                      'Margamkali',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18.sp,
-                        fontFamily: 'Poppins',
-                        fontWeight: FontWeight.w500,
-                        height: 0,
-                      ),
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Spacer(),
+                  Text(
+                    event['name'] ?? '', // Display event name
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18.sp,
+                      fontFamily: 'Poppins',
+                      fontWeight: FontWeight.w500,
+                      height: 0,
                     ),
-                    Spacer(),
-                    Icon(CupertinoIcons.delete_solid)
-                  ],
-                ),
-                Text(
-                  'Date   : 08/02/2023',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 15.sp,
-                    fontFamily: 'Poppins',
-                    fontWeight: FontWeight.w500,
-                    height: 0,
                   ),
+                  Spacer(),
+                ],
+              ),
+              Text(
+                'Date   : ${event['date'] ?? ''}',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 15.sp,
+                  fontFamily: 'Poppins',
+                  fontWeight: FontWeight.w500,
+                  height: 0,
                 ),
-                Text(
-                  'Time   : 10:00',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 15.sp,
-                    fontFamily: 'Poppins',
-                    fontWeight: FontWeight.w500,
-                    height: 0.h,
-                  ),
+              ),
+              Text(
+                'Time   : ${event['time'] ?? ''}',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 15.sp,
+                  fontFamily: 'Poppins',
+                  fontWeight: FontWeight.w500,
+                  height: 0.h,
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Stage : 5',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 15.sp,
-                        fontFamily: 'Poppins',
-                        fontWeight: FontWeight.w500,
-                        height: 0,
-                      ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Stage : ${event['stage'] ?? ''}',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 15.sp,
+                      fontFamily: 'Poppins',
+                      fontWeight: FontWeight.w500,
+                      height: 0,
                     ),
-                    InkWell(
-                        onTap: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => EditEvent(),
-                              ));
-                        },
-                        child: Icon(Icons.edit_square)),
-                  ],
-                )
-              ]),
+                  ),
+                  InkWell(
+                    onTap: () {
+                      String documentId = event['docId'] ?? '';
+                      // Handle edit event action
+                      print(documentId);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => EditEvent(documentId: documentId,),
+                        ),
+                      );
+                    },
+                    child: Icon(Icons.edit_square),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       );
+    }).toList();
+
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        children: eventWidgets,
+      ),
+    );
+  }
 }

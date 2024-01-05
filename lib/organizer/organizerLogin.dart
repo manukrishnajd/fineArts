@@ -1,134 +1,121 @@
-import 'package:fine_arts/organizer/organizerAssign.dart';
-import 'package:fine_arts/organizer/organizerRegistration.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:fine_arts/organizer/organizerAssign.dart';
+import 'package:fine_arts/organizer/organizerRegistration.dart';
 
 class OrganizerLogin extends StatefulWidget {
-  const OrganizerLogin({super.key});
+  const OrganizerLogin({Key? key});
 
   @override
   State<OrganizerLogin> createState() => _OrganizerLoginState();
-}
+} 
 
 class _OrganizerLoginState extends State<OrganizerLogin> {
   var user = TextEditingController();
   var password = TextEditingController();
 
-  final formKey = new GlobalKey<FormState>();
+  final formKey = GlobalKey<FormState>();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: SafeArea(
-          child: Form(
-        key: formKey,
-        child: Column(
-          children: [
-            SizedBox(
-              height: 14.h,
-            ),
-            SizedBox(
+        child: Form(
+          key: formKey,
+          child: Column(
+            children: [
+              SizedBox(height: 14.h),
+              SizedBox(
                 height: 110.h,
                 width: 110.w,
-                child: Image.asset('assets/image 1.png')),
-            SizedBox(
-              height: 40.h,
-            ),
-            Center(
-              child: Text(
-                'Login',
-                style: TextStyle(
-                  color: Color(0xFF204563),
-                  fontSize: 30.sp,
-                  fontFamily: 'Poppins',
-                  fontWeight: FontWeight.w600,
-                  height: 0,
+                child: Image.asset('assets/image 1.png'),
+              ),
+              SizedBox(height: 40.h),
+              Center(
+                child: Text(
+                  'Login',
+                  style: TextStyle(
+                    color: Color(0xFF204563),
+                    fontSize: 30.sp,
+                    fontFamily: 'Poppins',
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
-            ),
-            SizedBox(
-              height: 74.h,
-            ),
-            customTextField('username', user),
-            SizedBox(
-              height: 50.h,
-            ),
-            customTextField('password', password),
-            SizedBox(
-              height: 30.h,
-            ),
-            customButton(18.0, "Login"),
-            SizedBox(
-              height: 50.h,
-            ),
-            InkWell(
-              onTap: () {
-                Navigator.push(
+              SizedBox(height: 74.h),
+              customTextField('username', user),
+              SizedBox(height: 50.h),
+              customTextField('password', password),
+              SizedBox(height: 30.h),
+              customButton(18.0, "Login"),
+              SizedBox(height: 50.h),
+              InkWell(
+                onTap: () {
+                  Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => OrgRegistration(),
-                    ));
-              },
-              child: Text(
-                'Create  new Account',
-                style: TextStyle(
-                  color: Color(0xFF204563),
-                  fontSize: 15.sp,
-                  fontFamily: 'Poppins',
-                  fontWeight: FontWeight.w400,
-                  height: 0,
+                    ),
+                  );
+                },
+                child: Text(
+                  'Create new Account',
+                  style: TextStyle(
+                    color: Color(0xFF204563),
+                    fontSize: 15.sp,
+                    fontFamily: 'Poppins',
+                    fontWeight: FontWeight.w400,
+                  ),
                 ),
-              ),
-            )
-          ],
+              )
+            ],
+          ),
         ),
-      )),
+      ),
     );
   }
 
   ElevatedButton customButton(double textSize, String text) => ElevatedButton(
-      style: ButtonStyle(
+        style: ButtonStyle(
           shape: MaterialStatePropertyAll(RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10.r))),
+            borderRadius: BorderRadius.circular(10.r),
+          )),
           minimumSize: MaterialStatePropertyAll(Size(350.w, 60.h)),
-          backgroundColor: MaterialStatePropertyAll(Color(0xFF204563))),
-      onPressed: () {
-        if (formKey.currentState!.validate())
-          Navigator.pushReplacement(context, MaterialPageRoute(
-            builder: (context) {
-              return OrgAssign();
-            },
-          ));
-      },
-      child: Text(
-        text,
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: textSize,
-          fontFamily: 'Poppins',
-          fontWeight: FontWeight.w500,
-          height: 0,
+          backgroundColor: MaterialStatePropertyAll(Color(0xFF204563)),
         ),
-      ));
+        onPressed: () {
+          if (formKey.currentState!.validate()) {
+            validateLogin();
+          }
+        },
+        child: Text(
+          text,
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: textSize,
+            fontFamily: 'Poppins',
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      );
 
-  Padding customTextField(
-    String hintText,
-    var controller,
-  ) {
+  Padding customTextField(String hintText, var controller) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20).r,
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       child: TextFormField(
         controller: controller,
         validator: (value) {
           if (value == null || value.isEmpty) {
             return 'Empty field';
           }
+          return null;
         },
         decoration: InputDecoration(
-          // prefixIcon: prefixIcon,
-
           hintText: hintText,
-          contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 20).r,
+          contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
           hintStyle: TextStyle(
             color: Color(0xFF1A1919),
             fontSize: 15.sp,
@@ -155,5 +142,51 @@ class _OrganizerLoginState extends State<OrganizerLogin> {
         ),
       ),
     );
+  }
+
+  void validateLogin() async {
+    final String enteredEmail = user.text;
+    final String enteredPassword = password.text;
+
+    try {
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('organiser')
+          .where('email', isEqualTo: enteredEmail)
+          .where('password', isEqualTo: enteredPassword)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        String docId = querySnapshot.docs.first.id; // Get the Document ID
+
+        // Store Document ID in shared preferences
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('organizerDocId', docId);
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => OrgAssign()),
+        );
+      } else {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text('Invalid Credentials'),
+              content: Text('Please enter valid email and password.'),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text('OK'),
+                ),
+              ],
+            );
+          },
+        );
+      }
+    } catch (e) {
+      print('Error: $e');
+    }
   }
 }
