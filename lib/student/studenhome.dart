@@ -6,7 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Studenthome extends StatefulWidget {
-  const Studenthome({super.key});
+  const Studenthome({Key? key}) : super(key: key);
 
   @override
   State<Studenthome> createState() => _StudenthomeState();
@@ -14,11 +14,13 @@ class Studenthome extends StatefulWidget {
 
 class _StudenthomeState extends State<Studenthome> {
   List<Map<String, dynamic>> eventsData = [];
+  List<Map<String, dynamic>> resultData = [];
 
   @override
   void initState() {
     super.initState();
     fetchData();
+    fetchResultData();
   }
 
   Future<dynamic> fetchData() async {
@@ -32,14 +34,12 @@ class _StudenthomeState extends State<Studenthome> {
       var eventData = querySnapshot.docs;
 
       if (eventData.isNotEmpty) {
-        
-          eventsData = eventData.map((doc) {
-            var data = doc.data() as Map<String, dynamic>;
-            data['docId'] = doc.id; // Include the documentId in the event data
-            return data;
-          }).toList();
-          print(eventsData);
-    
+        eventsData = eventData.map((doc) {
+          var data = doc.data() as Map<String, dynamic>;
+          data['docId'] = doc.id; // Include the documentId in the event data
+          return data;
+        }).toList();
+        print(eventsData);
       } else {
         print('No events found for organizer: $organizerId');
       }
@@ -49,6 +49,18 @@ class _StudenthomeState extends State<Studenthome> {
     return eventsData;
   }
 
+  Future<dynamic> fetchResultData() async {
+    // Add logic here to fetch result data
+    // Assign result data to the 'resultData' variable
+    // Example: resultData = await YourResultFetchingFunction();
+    // Ensure the 'YourResultFetchingFunction' returns the result data
+    // For example:
+    // var querySnapshot = await FirebaseFirestore.instance.collection('results').get();
+    // resultData = querySnapshot.docs.map((doc) => doc.data()).toList();
+    // print(resultData);
+    return resultData;
+  }
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -56,139 +68,18 @@ class _StudenthomeState extends State<Studenthome> {
       initialIndex: 0,
       child: Scaffold(
         body: SafeArea(
-            child: Stack(
-          children: [
-            TabBarView(children: [
-              Column(
+          child: Stack(
+            children: [
+              TabBarView(
                 children: [
-                  SizedBox(
-                    height: MediaQuery.of(context).size.height / 20,
-                  ),
-                  Center(
-                    child: Text(
-                      'Event',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 18.sp,
-                        fontFamily: 'Poppins',
-                        fontWeight: FontWeight.w500,
-                        height: 0,
+                  Column(
+                    children: [
+                      SizedBox(
+                        height: MediaQuery.of(context).size.height / 20,
                       ),
-                    ),
-                  ),
-                  SizedBox(
-                    height: 28.h,
-                  ),
-                  FutureBuilder(
-                      future: fetchData(),
-                      builder: (context, snap) {
-                        if (snap.hasData) {
-                          return Expanded(
-                            child: ListView.builder(
-                              itemCount: eventsData.length,
-                              itemBuilder: (context, index) {
-                                return Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: InkWell(
-                                    onTap: (){
-                                       String documentId = eventsData[index]['docId'] ?? '';
-                                      Navigator.push(context,MaterialPageRoute(builder: (context) {
-                                        return Eventdetails(documentId:documentId);
-                                      },));
-                                    },  
-                                    child: Container(
-                                      width: 350.w,
-                                      height: 50.h,
-                                      padding: EdgeInsets.symmetric(
-                                          vertical: 7, horizontal: 28),
-                                      decoration: ShapeDecoration(
-                                        shape: RoundedRectangleBorder(
-                                          side: BorderSide(
-                                              width: 1.w, color: Color(0xFF558DBA)),
-                                          borderRadius: BorderRadius.circular(8.r),
-                                        ),
-                                      ),
-                                      child: Row(children: [
-                                        Image.asset('assets/photo 1.png'),
-                                        SizedBox(
-                                          width: 28.w,
-                                        ),
-                                        Text(
-                                          eventsData[index]['name'],
-                                          style: TextStyle(
-                                            color: Colors.black,
-                                            fontSize: 18.sp,
-                                            fontFamily: 'Poppins',
-                                            fontWeight: FontWeight.w500,
-                                            height: 0,
-                                          ),
-                                        )
-                                      ]),
-                                    ),
-                                  ),
-                                );
-                              },
-                              
-                            ),
-                          );
-                        } else {
-                          return Center(
-                            child: CircularProgressIndicator(),
-                          );
-                        }
-                      }),
-                  SizedBox(
-                    height: 20.h,
-                  ),
-                ],
-              ),
-              Column(
-                children: [
-                  SizedBox(
-                    height: MediaQuery.of(context).size.height / 20,
-                  ),
-                  Center(
-                    child: Text(
-                      'Result',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 18.sp,
-                        fontFamily: 'Poppins',
-                        fontWeight: FontWeight.w500,
-                        height: 0,
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    height: 28.h,
-                  ),
-                  InkWell(
-                    onTap: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => Resultdetails(),
-                          ));
-                    },
-                    child: Container(
-                      width: 350.w,
-                      height: 50.h,
-                      padding:
-                          EdgeInsets.symmetric(vertical: 7, horizontal: 28),
-                      decoration: ShapeDecoration(
-                        shape: RoundedRectangleBorder(
-                          side:
-                              BorderSide(width: 1.w, color: Color(0xFF558DBA)),
-                          borderRadius: BorderRadius.circular(8.r),
-                        ),
-                      ),
-                      child: Row(children: [
-                        Image.asset('assets/photo 1.png'),
-                        SizedBox(
-                          width: 28.w,
-                        ),
-                        Text(
-                          'Mohiniyattam',
+                      Center(
+                        child: Text(
+                          'Event',
                           style: TextStyle(
                             color: Colors.black,
                             fontSize: 18.sp,
@@ -196,43 +87,192 @@ class _StudenthomeState extends State<Studenthome> {
                             fontWeight: FontWeight.w500,
                             height: 0,
                           ),
-                        )
-                      ]),
-                    ),
-                  ),
-                  SizedBox(
-                    height: 20.h,
-                  ),
-                  Container(
-                    width: 350.w,
-                    height: 50.h,
-                    padding: EdgeInsets.symmetric(vertical: 7, horizontal: 28),
-                    decoration: ShapeDecoration(
-                      shape: RoundedRectangleBorder(
-                        side: BorderSide(width: 1.w, color: Color(0xFF558DBA)),
-                        borderRadius: BorderRadius.circular(8.r),
-                      ),
-                    ),
-                    child: Row(children: [
-                      Image.asset('assets/photo 1.png'),
-                      SizedBox(
-                        width: 28.w,
-                      ),
-                      Text(
-                        'Kolkali',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 18.sp,
-                          fontFamily: 'Poppins',
-                          fontWeight: FontWeight.w500,
-                          height: 0,
                         ),
-                      )
-                    ]),
+                      ),
+                      SizedBox(
+                        height: 28.h,
+                      ),
+                      FutureBuilder(
+                        future: fetchData(),
+                        builder: (context, snap) {
+                          if (snap.connectionState == ConnectionState.waiting) {
+                            return Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          } else if (snap.hasError) {
+                            return Center(
+                              child: Text('Error: ${snap.error}'),
+                            );
+                          } else {
+                            return Expanded(
+                              child: ListView.builder(
+                                itemCount: eventsData.length,
+                                itemBuilder: (context, index) {
+                                  return Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: InkWell(
+                                      onTap: () {
+                                        String documentId =
+                                            eventsData[index]['docId'] ?? '';
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) {
+                                              return Eventdetails(
+                                                documentId: documentId,
+                                              );
+                                            },
+                                          ),
+                                        );
+                                      },
+                                      child: Container(
+                                        width: 350.w,
+                                        height: 50.h,
+                                        padding: EdgeInsets.symmetric(
+                                            vertical: 7, horizontal: 28),
+                                        decoration: ShapeDecoration(
+                                          shape: RoundedRectangleBorder(
+                                            side: BorderSide(
+                                                width: 1.w,
+                                                color: Color(0xFF558DBA)),
+                                            borderRadius:
+                                                BorderRadius.circular(8.r),
+                                          ),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Image.asset('assets/photo 1.png'),
+                                            SizedBox(
+                                              width: 28.w,
+                                            ),
+                                            Text(
+                                              eventsData[index]['name'],
+                                              style: TextStyle(
+                                                color: Colors.black,
+                                                fontSize: 18.sp,
+                                                fontFamily: 'Poppins',
+                                                fontWeight: FontWeight.w500,
+                                                height: 0,
+                                              ),
+                                            )
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            );
+                          }
+                        },
+                      ),
+                      SizedBox(
+                        height: 20.h,
+                      ),
+                    ],
+                  ),
+                  Column(
+                    children: [
+                      SizedBox(
+                        height: MediaQuery.of(context).size.height / 20,
+                      ),
+                      Center(
+                        child: Text(
+                          'Result',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 18.sp,
+                            fontFamily: 'Poppins',
+                            fontWeight: FontWeight.w500,
+                            height: 0,
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        height: 28.h,
+                      ),
+                      FutureBuilder(
+                        future: fetchData(),
+                        builder: (context, snap) {
+                          if (snap.connectionState == ConnectionState.waiting) {
+                            return Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          } else if (snap.hasError) {
+                            return Center(
+                              child: Text('Error: ${snap.error}'),
+                            );
+                          } else {
+                            return Expanded(
+                              child: ListView.builder(
+                                itemCount: eventsData.length,
+                                itemBuilder: (context, index) {
+                                  return Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: InkWell(
+                                      onTap: () {
+                                        String documentId =
+                                            eventsData[index]['docId'] ?? '';
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) {
+                                              return Resultdetails(
+                                                documentId: documentId,
+                                              );
+                                            },
+                                          ),
+                                        );
+                                      },
+                                      child: Container(
+                                        width: 350.w,
+                                        height: 50.h,
+                                        padding: EdgeInsets.symmetric(
+                                            vertical: 7, horizontal: 28),
+                                        decoration: ShapeDecoration(
+                                          shape: RoundedRectangleBorder(
+                                            side: BorderSide(
+                                                width: 1.w,
+                                                color: Color(0xFF558DBA)),
+                                            borderRadius:
+                                                BorderRadius.circular(8.r),
+                                          ),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Image.asset('assets/photo 1.png'),
+                                            SizedBox(
+                                              width: 28.w,
+                                            ),
+                                            Text(
+                                              eventsData[index]['name'],
+                                              style: TextStyle(
+                                                color: Colors.black,
+                                                fontSize: 18.sp,
+                                                fontFamily: 'Poppins',
+                                                fontWeight: FontWeight.w500,
+                                                height: 0,
+                                              ),
+                                            )
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            );
+                          }
+                        },
+                      ),
+                      SizedBox(
+                        height: 20.h,
+                      ),
+                      // Other Result section content goes here
+                    ],
                   ),
                 ],
               ),
-            ]),
             Positioned(
               bottom: 20,
               left: 20,

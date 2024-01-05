@@ -17,6 +17,7 @@ class OrgEvent extends StatefulWidget {
 class _OrgEventState extends State<OrgEvent> with TickerProviderStateMixin {
 
    List<Map<String, dynamic>> eventsData = [];
+   
 
    @override
   void initState() {
@@ -94,10 +95,12 @@ class _OrgEventState extends State<OrgEvent> with TickerProviderStateMixin {
                         padding: EdgeInsets.symmetric(vertical: 8.0),
                         child: InkWell(
                           onTap: () {
+                      String documentId = event['docId'] ?? '';
+
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => ParticipentList(),
+                                builder: (context) => ParticipentList(documentId:documentId),
                               ),
                             );
                           },
