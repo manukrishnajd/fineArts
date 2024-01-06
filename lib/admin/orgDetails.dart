@@ -56,6 +56,7 @@ class _OrgDetailsState extends State<OrgDetails> {
               var data = snapshot.data!.docs[index];
               String name = data['name'] ?? '';
               String idNumber = data['idnumber'] ?? '';
+            
               String documentId = snapshot.data!.docs[index].id; // Retrieve document ID
 
               return Column(

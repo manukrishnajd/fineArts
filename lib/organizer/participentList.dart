@@ -23,11 +23,11 @@ class _ParticipentListState extends State<ParticipentList> {
 
   Future<void> fetchParticipants() async {
     try {
-      QuerySnapshot<Map<String, dynamic>> querySnapshot = await FirebaseFirestore
-          .instance
-          .collection('EventRegistration')
-          .where('eventId', isEqualTo: widget.documentId)
-          .get();
+      QuerySnapshot<Map<String, dynamic>> querySnapshot =
+          await FirebaseFirestore.instance
+              .collection('EventRegistration')
+              .where('eventId', isEqualTo: widget.documentId)
+              .get();
 
       List<Map<String, dynamic>> tempParticipants = [];
 
@@ -78,6 +78,9 @@ class _ParticipentListState extends State<ParticipentList> {
             return customContainer(
               participants[index]['name'],
               participants[index]['idNumber'],
+              participants[index]['phoneNumber'] ?? '',
+              participants[index]['email'] ?? '',
+              participants[index]['department'] ?? '',
             );
           },
         ),
@@ -85,50 +88,71 @@ class _ParticipentListState extends State<ParticipentList> {
     );
   }
 
-  Container customContainer(String name, String idNumber) {
+  Container customContainer(
+    String name,
+    String idNumber,
+    String phoneNumber,
+    String email,
+    String department,
+  ) {
     return Container(
-      width: 350.w,
-      height: 60.h,
-      decoration: ShapeDecoration(
-        shape: RoundedRectangleBorder(
-          side: BorderSide(width: 1.w, color: Color(0xFF191717)),
-          borderRadius: BorderRadius.circular(8.r),
-        ),
+      margin: EdgeInsets.symmetric(vertical: 10),
+      padding: EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        border: Border.all(width: 1, color: Color(0xFF191717)),
+        borderRadius: BorderRadius.circular(8),
       ),
-      child: Padding(
-        padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 20.w),
-        child: Row(
-          children: [
-            Image.asset('assets/user2.1.png'),
-            SizedBox(width: 20.w),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Text(
-                  name,
-                  style: TextStyle(
-                    color: Color(0xFF1A1919),
-                    fontSize: 15.sp,
-                    fontFamily: 'Poppins',
-                    fontWeight: FontWeight.w400,
-                    height: 0,
-                  ),
-                ),
-                Text(
-                  idNumber,
-                  style: TextStyle(
-                    color: Color(0xFFB8B1B1),
-                    fontSize: 13.sp,
-                    fontFamily: 'Poppins',
-                    fontWeight: FontWeight.w400,
-                    height: 0,
-                  ),
-                )
-              ],
-            )
-          ],
-        ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Name: $name',
+            style: TextStyle(
+              color: Color(0xFF1A1919),
+              fontSize: 20,
+              fontFamily: 'Poppins',
+              fontWeight: FontWeight.w400,
+            ),
+          ),
+          SizedBox(height: 10),
+          Text(
+            'ID Number: $idNumber',
+            style: TextStyle(
+              color: Color.fromARGB(255, 37, 124, 170),
+              fontSize: 16,
+              fontFamily: 'Poppins',
+              fontWeight: FontWeight.w400,
+            ),
+          ),
+          Text(
+            'Department: $department',
+            style: TextStyle(
+              color: Color.fromARGB(255, 37, 124, 170),
+              fontSize: 16,
+              fontFamily: 'Poppins',
+              fontWeight: FontWeight.w400,
+            ),
+          ),
+          SizedBox(height: 10),
+          Text(
+            'Phone Number: $phoneNumber',
+            style: TextStyle(
+              color: Color.fromARGB(255, 37, 124, 170),
+              fontSize: 16,
+              fontFamily: 'Poppins',
+              fontWeight: FontWeight.w400,
+            ),
+          ),
+          Text(
+            'Email: $email',
+            style: TextStyle(
+              color: Color.fromARGB(255, 37, 124, 170),
+              fontSize: 16,
+              fontFamily: 'Poppins',
+              fontWeight: FontWeight.w400,
+            ),
+          ),
+        ],
       ),
     );
   }
