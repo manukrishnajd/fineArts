@@ -1,0 +1,149 @@
+import 'dart:io';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+class AddResult extends StatefulWidget {
+  const AddResult({Key? key});
+
+  @override
+  State<AddResult> createState() => _AddResultState();
+}
+
+class _AddResultState extends State<AddResult> {
+  String selectedEvent = ''; // Store the selected event
+  File? _imageFile; // Store the picked image
+   List<Map<String, dynamic>> eventsData = [];
+
+  Future<void> _getImage() async {
+    final picker = ImagePicker();
+    final pickedImage = await picker.pickImage(source: ImageSource.gallery);
+    if (pickedImage != null) {
+      setState(() {
+        _imageFile = File(pickedImage.path);
+      });
+    }
+  }
+Future<void> getEvents() async {
+    SharedPreferences spref = await SharedPreferences.getInstance();
+    var organiserId = spref.getString('organizerDocId');
+    print(organiserId);
+
+    // Fetch events from Firestore using the organizer ID
+    var querySnapshot = await FirebaseFirestore.instance
+        .collection('events')
+        .where('organiserId', isEqualTo: organiserId)
+        .get();
+
+    // Handle the retrieved data
+    if (querySnapshot.docs.isNotEmpty) {
+      setState(() {
+        eventsData = querySnapshot.docs.map((doc) => doc.data()).toList();
+        print(eventsData);
+      });
+    } else {
+      print('[object]');
+    }
+  }
+
+  List<DropdownMenuItem<String>> getDropdownItems() {
+    List<DropdownMenuItem<String>> items = [];
+
+    for (var eventData in eventsData) {
+      items.add(
+        DropdownMenuItem(
+          value: eventData['organiserId'],
+          child: Text(eventData['name']),
+        ),
+      );
+    }
+
+    return items;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        centerTitle: true,
+        title: Text(
+          'Add Result',
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 18.sp,
+            fontFamily: 'Poppins',
+            fontWeight: FontWeight.w500,
+            height: 0,
+          ),
+        ),
+      ),
+      body: Padding(
+        padding: EdgeInsets.all(20.w),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(height: 47.h),
+            Container(
+              width: 350.w,
+              height: 60.h,
+              decoration: ShapeDecoration(
+                shape: RoundedRectangleBorder(
+                  side: BorderSide(width: 1.w, color: Color(0xFF191717)),
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
+              ),
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 20.w),
+                child: DropdownButton<String>(
+                  value: selectedEvent.isNotEmpty ? selectedEvent : null,
+                  hint: Text(
+                    'Select Event',
+                    style: TextStyle(
+                      color: Color(0xFF1A1919),
+                      fontSize: 15.sp,
+                      fontFamily: 'Poppins',
+                      fontWeight: FontWeight.w400,
+                      height: 0,
+                    ),
+                  ),
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      selectedEvent = newValue ?? '';
+                    });
+                  },
+                  onTap: () {
+                    getEvents(); // Call getEvents function when DropdownButton is clicked
+                  },
+                  items:getDropdownItems()
+                ),
+              ),
+            ),
+            SizedBox(height: 23.h),
+            // Other parts of your UI
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+
+
+DropdownButton<String>(
+          value: selectedOption,
+          hint: Text('Select an option'),
+          onChanged: (String? newValue) {
+            setState(() {
+              selectedOption = newValue;
+            });
+          },
+          items: options.map<DropdownMenuItem<String>>((Map<String, dynamic> option) {
+            return DropdownMenuItem<String>(
+              value: option['value'].toString(),
+              child: Text(option['label']),
+            );
+          }).toList(),
+        ),
